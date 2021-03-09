@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+F:/Programacao/CParalelaUfrgs2020_2/ER221ProdEscalar_ER222Axb/GSL_ProdEscalar_Axb.cpp
+omp.h
+-
+stdio.h
+-
+ctime
+-
+gsl/gsl_vector.h
+-
+gsl/gsl_rng.h
+-
+
