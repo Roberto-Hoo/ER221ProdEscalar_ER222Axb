@@ -22,7 +22,7 @@ int M1[NumThreads], M2[NumThreads], M3[NumThreads];
 gsl_vector *a = gsl_vector_alloc(n);
 gsl_vector *b = gsl_vector_alloc(n);
 
-int n1 = 10;
+int n1 = 1000;
 // vetores
 gsl_matrix *A = gsl_matrix_alloc(n1, n1);
 gsl_vector *x = gsl_vector_alloc(n1);
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     // gerador randômico
     gsl_rng_set(rng, time(NULL));
 
-    // inicialização
+    // inicialização, cria a matriz A e o vetor x
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n1; j++) {
             gsl_matrix_set(A, i, j, gsl_rng_uniform(rng));
@@ -108,21 +108,27 @@ int main(int argc, char *argv[]) {
     {
 #pragma omp section
         {
-            gsl_matrix_const_view as1 = gsl_matrix_const_submatrix(A, 0, 0, n1 / 2, n1);
+            //gsl_matrix_const_submatrix(*A,LinInicial=i,ColInicial=j,NumLinhas=n1,NumCol=n2)
+            gsl_matrix_const_view as1 = gsl_matrix_const_submatrix(A, 0, 0, n1/2, n1);
             gsl_vector_view ys1  = gsl_vector_subvector(y, 0, n1 / 2);
             gsl_blas_dgemv(CblasNoTrans,1.0, &as1.matrix, x, 0.0, &ys1.vector);
+            /* gsl_blas_dgemv  performs one of the matrix-vector operations
+             * y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+             * where alpha and beta are scalars, x and y are vectors and A is an m by n matrix.*/
         }
 
 #pragma omp section
         {
+            // as2 é a submatriz inferior
             gsl_matrix_const_view as2 = gsl_matrix_const_submatrix(A, n1 / 2, 0,(n1 - n1 / 2), n1);
+            // ys2 é o subvetor inferior
             gsl_vector_view ys2 = gsl_vector_subvector(y, n1 / 2, (n1 - n1 / 2));
             gsl_blas_dgemv(CblasNoTrans,1.0, &as2.matrix, x,0.0, &ys2.vector);
         }
     }
 
     for (int i=0; i<n1; i++)
-    printf("\n %f", gsl_vector_get(y,i));
+    printf("\n y[%d]=%f", i,gsl_vector_get(y,i));
 
     gsl_matrix_free(A);
     gsl_vector_free(x);
