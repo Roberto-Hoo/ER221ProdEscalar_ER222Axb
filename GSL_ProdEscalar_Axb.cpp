@@ -7,8 +7,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_matrix.h>
- #include <gsl/gsl_blas.h>
-
+#include <gsl/gsl_blas.h>
 
 
 using namespace std;
@@ -109,9 +108,9 @@ int main(int argc, char *argv[]) {
 #pragma omp section
         {
             //gsl_matrix_const_submatrix(*A,LinInicial=i,ColInicial=j,NumLinhas=n1,NumCol=n2)
-            gsl_matrix_const_view as1 = gsl_matrix_const_submatrix(A, 0, 0, n1/2, n1);
-            gsl_vector_view ys1  = gsl_vector_subvector(y, 0, n1 / 2);
-            gsl_blas_dgemv(CblasNoTrans,1.0, &as1.matrix, x, 0.0, &ys1.vector);
+            gsl_matrix_const_view as1 = gsl_matrix_const_submatrix(A, 0, 0, n1 / 2, n1);
+            gsl_vector_view ys1 = gsl_vector_subvector(y, 0, n1 / 2);
+            gsl_blas_dgemv(CblasNoTrans, 1.0, &as1.matrix, x, 0.0, &ys1.vector);
             /* gsl_blas_dgemv  performs one of the matrix-vector operations
              * y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
              * where alpha and beta are scalars, x and y are vectors and A is an m by n matrix.*/
@@ -120,20 +119,36 @@ int main(int argc, char *argv[]) {
 #pragma omp section
         {
             // as2 é a submatriz inferior
-            gsl_matrix_const_view as2 = gsl_matrix_const_submatrix(A, n1 / 2, 0,(n1 - n1 / 2), n1);
+            gsl_matrix_const_view as2 = gsl_matrix_const_submatrix(A, n1 / 2, 0, (n1 - n1 / 2), n1);
             // ys2 é o subvetor inferior
             gsl_vector_view ys2 = gsl_vector_subvector(y, n1 / 2, (n1 - n1 / 2));
-            gsl_blas_dgemv(CblasNoTrans,1.0, &as2.matrix, x,0.0, &ys2.vector);
+            gsl_blas_dgemv(CblasNoTrans, 1.0, &as2.matrix, x, 0.0, &ys2.vector);
         }
     }
 
-    for (int i=0; i<n1; i++)
-    printf("\n y[%d]=%f", i,gsl_vector_get(y,i));
+    for (int i = 0; i < n1; i++)
+        printf("\n y[%d]=%f", i, gsl_vector_get(y, i));
 
     gsl_matrix_free(A);
     gsl_vector_free(x);
     gsl_vector_free(y);
     gsl_rng_free(rng);
+
+    /* E 2.2.1.
+     * Considere o seguinte código abaixo.
+     * Qual o valor impresso?
+    */
+
+    int tid = 10;
+    cout << "\n";
+
+#pragma omp parallel private(tid)
+    {
+        tid = omp_get_thread_num();
+        printf("\n omp_get_thread_num = %d", tid);
+    }
+    printf("\n\n Volta o valor tid da memoria serial tid = %d", tid);
+
 
     cout << "\n\n Tecle uma tecla e apos Enter para finalizar...\n";
     cin >> caracter;
